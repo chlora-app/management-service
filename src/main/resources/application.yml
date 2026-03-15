@@ -1,0 +1,20 @@
+spring:
+  application.name: management-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/chlora}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health,info
+
+security:
+  jwt:
+    public-key: ${SECURITY_JWT_PUBLIC_KEY_PATH:file:src/main/resources/keys/public-key.pem}
+
+server:
+  port: ${SERVER_PORT:8081}
