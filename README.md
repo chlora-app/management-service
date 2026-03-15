@@ -13,14 +13,16 @@ A Spring Boot management service for IoT resources, providing REST APIs for mana
 
 
 ## Project Structure
+```
 cloud.chlora.management
-├─ common # Shared configuration, enums, error handling, mappers, and error response DTO
-├─ iot 
-│ ├─ cluster # Cluster CRUD – controller, domain, DTOs, repository, service
-│ └─ device # Device CRUD – controller, domain, DTOs, repository, service 
-├─ security # JWT authentication config, properties, and cookie-based auth utilities 
-├─ user # User CRUD – controller, domain, DTOs, repository, service 
-└─ ManagementServiceApplication.java
+├── common # Shared configuration, enums, error handling, mappers, and error response DTO
+├── iot 
+│   ├─ cluster # Cluster CRUD – controller, domain, DTOs, repository, service
+│   └─ device # Device CRUD – controller, domain, DTOs, repository, service 
+├── security # JWT authentication config, properties, and cookie-based auth utilities 
+├── user # User CRUD – controller, domain, DTOs, repository, service 
+└── ManagementServiceApplication.java
+```
 
 
 ## Prerequisites
