@@ -80,8 +80,8 @@ public class UserService {
     @Transactional
     public UserCreateResponse createUser(@Valid UserCreateRequest request) {
         if (userRepository.findOneByEmail(request.email()).isPresent()) {
-            LogHelper.User.notFound(log, UserErrorCode.USER_NOT_FOUND, "createUser", request.email());
-            throw AppException.of(UserErrorCode.USER_NOT_FOUND);
+            LogHelper.User.notFound(log, UserErrorCode.EMAIL_ALREADY_EXISTS, "createUser", request.email());
+            throw AppException.of(UserErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
         String password = generateDefaultPassword(request.name());
@@ -116,6 +116,13 @@ public class UserService {
         if (request.email() == null && request.name() == null && request.role() == null) {
             LogHelper.User.error(log, UserErrorCode.USER_PATCH_EMPTY, "updateUser", userId);
             throw AppException.of(UserErrorCode.USER_PATCH_EMPTY);
+        }
+
+        if (request.email() != null && !request.email().equals(existingUser.getEmail())) {
+            if (userRepository.findOneByEmail(request.email()).isPresent()) {
+                LogHelper.User.conflict(log, UserErrorCode.EMAIL_ALREADY_EXISTS, "updateUser", request.email());
+                throw AppException.of(UserErrorCode.EMAIL_ALREADY_EXISTS);
+            }
         }
 
         User updatedUser = existingUser.toBuilder()
