@@ -13,7 +13,8 @@ public enum UserErrorCode implements AppErrorCode {
     USER_ALREADY_DELETED("USER-409-003", HttpStatus.CONFLICT, "user","User already deleted"),
 
     USER_RESTORE_FAILED("USER-500-001", HttpStatus.INTERNAL_SERVER_ERROR, "user","User restore failed"),
-    USER_DELETE_FAILED("USER-500-002", HttpStatus.INTERNAL_SERVER_ERROR, "user","User delete failed");
+    USER_DELETE_FAILED("USER-500-002", HttpStatus.INTERNAL_SERVER_ERROR, "user","User delete failed"),
+    USER_UPDATE_FAILED("USER-500-003", HttpStatus.INTERNAL_SERVER_ERROR, "user","User update failed");
 
     private final String code;
     private final HttpStatus status;

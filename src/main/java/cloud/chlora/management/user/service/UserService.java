@@ -86,7 +86,7 @@ public class UserService {
 
         String password = generateDefaultPassword(request.name());
 
-        User user = new User(
+        User user = User.create(
                 request.email(),
                 password,
                 request.name(),
@@ -110,15 +110,28 @@ public class UserService {
 
     @Transactional
     public UserUpdateResponse updateUser(String userId, UserUpdateRequest request) {
-        User user = getByUserId(userId, "updateUser");
-        checkUserExists(user, "updateUser");
+        User existingUser = getByUserId(userId, "updateUser");
+        checkUserExists(existingUser, "updateUser");
 
         if (request.email() == null && request.name() == null && request.role() == null) {
             LogHelper.User.error(log, UserErrorCode.USER_PATCH_EMPTY, "updateUser", userId);
             throw AppException.of(UserErrorCode.USER_PATCH_EMPTY);
         }
 
-        return null;
+        User updatedUser = existingUser.toBuilder()
+                .email(request.email() != null ? request.email() : existingUser.getEmail())
+                .name(request.name() != null ? request.name() : existingUser.getName())
+                .role(request.role() != null ? request.role() : existingUser.getRole())
+                .updatedAt(Instant.now())
+                .build();
+
+        int rows = userRepository.update(updatedUser);
+        if (rows == 0) {
+            LogHelper.User.error(log, UserErrorCode.USER_UPDATE_FAILED, "updateUser", updatedUser.getUserId());
+            throw AppException.of(UserErrorCode.USER_UPDATE_FAILED);
+        }
+
+        return ResponseMapper.UserMapper.toUpdateResponse(updatedUser);
     }
 
     @Transactional

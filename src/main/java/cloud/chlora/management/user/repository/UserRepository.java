@@ -138,6 +138,16 @@ public class UserRepository {
                 .single();
     }
 
+    public int update(User user) {
+        String sql = "UPDATE users SET name = ?, email = ?, role = ? WHERE user_id = ?";
+        return jdbcClient.sql(sql)
+                .param(user.getName())
+                .param(user.getEmail())
+                .param(user.getRole().name())
+                .param(user.getUserId())
+                .update();
+    }
+
     public int delete(String userId) {
         String sql = "UPDATE users SET deleted_at = NOW() WHERE user_id = ?";
         return jdbcClient.sql(sql)

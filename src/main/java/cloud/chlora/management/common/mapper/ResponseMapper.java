@@ -8,6 +8,7 @@ import cloud.chlora.management.user.domain.entity.User;
 import cloud.chlora.management.user.dto.response.UserCreateResponse;
 import cloud.chlora.management.user.dto.response.UserDeletedResponse;
 import cloud.chlora.management.user.dto.response.UserGetResponse;
+import cloud.chlora.management.user.dto.response.UserUpdateResponse;
 
 import java.util.List;
 
@@ -31,6 +32,16 @@ public class ResponseMapper {
                     user.getName(),
                     user.getRole(),
                     user.getCreatedAt()
+            );
+        }
+
+        public static UserUpdateResponse toUpdateResponse(User user) {
+            return new UserUpdateResponse(
+                    user.getUserId(),
+                    user.getEmail(),
+                    user.getName(),
+                    user.getRole(),
+                    user.getUpdatedAt()
             );
         }
 
