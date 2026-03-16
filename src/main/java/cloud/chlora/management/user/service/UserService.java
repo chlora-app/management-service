@@ -17,6 +17,7 @@ import cloud.chlora.management.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ import java.time.Instant;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public PagedUserResponse<UserGetResponse> findAllExistingUser(UserQueryParam queryParam) {
         int page = Math.max(queryParam.page(), 1);
@@ -88,7 +90,7 @@ public class UserService {
 
         User user = User.create(
                 request.email(),
-                password,
+                passwordEncoder.encode(password),
                 request.name(),
                 request.role(),
                 Instant.now()
