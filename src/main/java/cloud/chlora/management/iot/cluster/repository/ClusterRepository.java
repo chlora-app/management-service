@@ -182,6 +182,14 @@ public class ClusterRepository {
                 .update();
     }
 
+    public boolean isClusterIdExists(String clusterId) {
+        String sql = "SELECT COUNT(*) FROM clusters WHERE cluster_id = ?";
+        return jdbcClient.sql(sql)
+                .param(clusterId)
+                .query(Long.class)
+                .single() > 0;
+    }
+
     // ===== HELPER ===== //
     private String normalizeSearch(String search) {
         if (search == null) {

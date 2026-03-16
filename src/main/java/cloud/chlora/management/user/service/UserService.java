@@ -17,6 +17,7 @@ import cloud.chlora.management.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ import java.time.Instant;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public PagedUserResponse<UserGetResponse> findAllExistingUser(UserQueryParam queryParam) {
         int page = Math.max(queryParam.page(), 1);
@@ -80,15 +82,15 @@ public class UserService {
     @Transactional
     public UserCreateResponse createUser(@Valid UserCreateRequest request) {
         if (userRepository.findOneByEmail(request.email()).isPresent()) {
-            LogHelper.User.notFound(log, UserErrorCode.USER_NOT_FOUND, "createUser", request.email());
-            throw AppException.of(UserErrorCode.USER_NOT_FOUND);
+            LogHelper.User.notFound(log, UserErrorCode.EMAIL_ALREADY_EXISTS, "createUser", request.email());
+            throw AppException.of(UserErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
         String password = generateDefaultPassword(request.name());
 
-        User user = new User(
+        User user = User.create(
                 request.email(),
-                password,
+                passwordEncoder.encode(password),
                 request.name(),
                 request.role(),
                 Instant.now()
@@ -110,15 +112,35 @@ public class UserService {
 
     @Transactional
     public UserUpdateResponse updateUser(String userId, UserUpdateRequest request) {
-        User user = getByUserId(userId, "updateUser");
-        checkUserExists(user, "updateUser");
+        User existingUser = getByUserId(userId, "updateUser");
+        checkUserExists(existingUser, "updateUser");
 
         if (request.email() == null && request.name() == null && request.role() == null) {
             LogHelper.User.error(log, UserErrorCode.USER_PATCH_EMPTY, "updateUser", userId);
             throw AppException.of(UserErrorCode.USER_PATCH_EMPTY);
         }
 
-        return null;
+        if (request.email() != null && !request.email().equals(existingUser.getEmail())) {
+            if (userRepository.findOneByEmail(request.email()).isPresent()) {
+                LogHelper.User.conflict(log, UserErrorCode.EMAIL_ALREADY_EXISTS, "updateUser", request.email());
+                throw AppException.of(UserErrorCode.EMAIL_ALREADY_EXISTS);
+            }
+        }
+
+        User updatedUser = existingUser.toBuilder()
+                .email(request.email() != null ? request.email() : existingUser.getEmail())
+                .name(request.name() != null ? request.name() : existingUser.getName())
+                .role(request.role() != null ? request.role() : existingUser.getRole())
+                .updatedAt(Instant.now())
+                .build();
+
+        int rows = userRepository.update(updatedUser);
+        if (rows == 0) {
+            LogHelper.User.error(log, UserErrorCode.USER_UPDATE_FAILED, "updateUser", updatedUser.getUserId());
+            throw AppException.of(UserErrorCode.USER_UPDATE_FAILED);
+        }
+
+        return ResponseMapper.UserMapper.toUpdateResponse(updatedUser);
     }
 
     @Transactional

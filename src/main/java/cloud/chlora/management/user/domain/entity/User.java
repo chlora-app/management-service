@@ -1,13 +1,15 @@
 package cloud.chlora.management.user.domain.entity;
 
 import cloud.chlora.management.user.domain.enums.UserRole;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class User {
 
     private Long id;
@@ -23,19 +25,19 @@ public class User {
     private Instant updatedAt;
     private Instant deletedAt;
 
-    public User() {}
-
-    public User(
+    public static User create(
             String email,
             String password,
             String name,
             UserRole role,
             Instant createdAt
     ) {
-        this.email = email;
-        this.password = password;
-        this.name = name;
-        this.role = role;
-        this.createdAt = createdAt;
+        return User.builder()
+                .email(email)
+                .password(password)
+                .name(name)
+                .role(role)
+                .createdAt(createdAt)
+                .build();
     }
 }
