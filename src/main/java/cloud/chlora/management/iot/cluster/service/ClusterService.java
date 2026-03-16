@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -50,9 +51,19 @@ public class ClusterService {
 
     @Transactional
     public ClusterCreateResponse createCluster(ClusterCreateRequest request) {
+        if (request.clusterName().isBlank()) {
+            LogHelper.Cluster.error(log, IotErrorCode.CLUSTER_REQUEST_EMPTY, "createCluster", null);
+            throw AppException.of(IotErrorCode.CLUSTER_REQUEST_EMPTY);
+        }
+
         Cluster cluster = Cluster.builder()
                 .clusterName(request.clusterName())
                 .build();
+
+        if (clusterRepository.isClusterNameExists(request.clusterName())) {
+            LogHelper.Cluster.error(log, IotErrorCode.CLUSTER_NAME_ALREADY_EXISTS, "createCluster", request.clusterName());
+            throw AppException.of(IotErrorCode.CLUSTER_NAME_ALREADY_EXISTS);
+        }
 
         Cluster savedCluster = clusterRepository.save(cluster);
         LogHelper.Cluster.success(log, "Cluster created successfully", "createCluster", savedCluster.getClusterId());
@@ -98,9 +109,18 @@ public class ClusterService {
         boolean isUpdated = false;
 
         if (request.clusterName() != null) {
+            if (Objects.equals(request.clusterName(), cluster.getClusterName())) {
+                return ResponseMapper.ClusterMapper.toUpdateResponse(cluster);
+            }
+
             if (clusterRepository.isClusterNameExists(request.clusterName())) {
                 LogHelper.Cluster.error(log, IotErrorCode.CLUSTER_NAME_ALREADY_EXISTS, "updateCluster", clusterId);
                 throw AppException.of(IotErrorCode.CLUSTER_NAME_ALREADY_EXISTS);
+            }
+
+            if (request.clusterName().isBlank()) {
+                LogHelper.Cluster.error(log, IotErrorCode.CLUSTER_UPDATE_EMPTY, "updateCluster", clusterId);
+                throw AppException.of(IotErrorCode.CLUSTER_UPDATE_EMPTY);
             }
 
             cluster.setClusterName(request.clusterName());

@@ -4,6 +4,7 @@ import cloud.chlora.management.common.enums.IotErrorCode;
 import cloud.chlora.management.common.exception.AppException;
 import cloud.chlora.management.common.helper.LogHelper;
 import cloud.chlora.management.common.mapper.ResponseMapper;
+import cloud.chlora.management.iot.cluster.repository.ClusterRepository;
 import cloud.chlora.management.iot.device.domain.Device;
 import cloud.chlora.management.iot.device.domain.DeviceStatus;
 import cloud.chlora.management.iot.device.dto.query.DeviceQuery;
@@ -25,6 +26,7 @@ import java.util.List;
 public class DeviceService {
 
     private final DeviceRepository deviceRepository;
+    private final ClusterRepository clusterRepository;
 
     public PagedDeviceResponse findAllExistingDevices(DeviceQuery query) {
         if (query.getPage() < 1) {
@@ -51,6 +53,16 @@ public class DeviceService {
 
     @Transactional
     public DeviceCreateResponse createDevice(DeviceCreateRequest request) {
+        if (request.deviceName().isBlank()) {
+            LogHelper.Device.error(log, IotErrorCode.DEVICE_REQUEST_INVALID, "createDevice", null);
+            throw AppException.of(IotErrorCode.DEVICE_REQUEST_INVALID);
+        }
+
+        if (!clusterRepository.isClusterIdExists(request.clusterId())) {
+            LogHelper.Device.notFound(log, IotErrorCode.CLUSTER_NOT_FOUND, "createDevice", request.clusterId());
+            throw AppException.of(IotErrorCode.CLUSTER_NOT_FOUND);
+        }
+
         Device device = Device.builder()
                 .deviceName(request.deviceName())
                 .deviceType(request.deviceType())
@@ -95,6 +107,11 @@ public class DeviceService {
         boolean isUpdated = false;
 
         if (request.deviceName() != null) {
+            if (request.deviceName().isBlank()) {
+                LogHelper.Device.error(log, IotErrorCode.DEVICE_REQUEST_INVALID, "updateDevice", null);
+                throw AppException.of(IotErrorCode.DEVICE_REQUEST_INVALID);
+            }
+
             device.setDeviceName(request.deviceName());
             isUpdated = true;
         }
@@ -110,6 +127,11 @@ public class DeviceService {
         }
 
         if (request.clusterId() != null) {
+            if (!clusterRepository.isClusterIdExists(request.clusterId())) {
+                LogHelper.Device.notFound(log, IotErrorCode.CLUSTER_NOT_FOUND, "updateDevice", deviceId);
+                throw AppException.of(IotErrorCode.CLUSTER_NOT_FOUND);
+            }
+
             device.setClusterId(request.clusterId());
             isUpdated = true;
         }
