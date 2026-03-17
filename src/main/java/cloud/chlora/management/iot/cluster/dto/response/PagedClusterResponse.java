@@ -7,5 +7,5 @@ public record PagedClusterResponse(
         int page,
         int size,
         int totalPages,
-        List<ClusterListResponse> clusters
+        List<ClusterSummaryResponse> clusters
 ) {}

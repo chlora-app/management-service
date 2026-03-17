@@ -9,7 +9,9 @@ import cloud.chlora.management.user.dto.response.UserCreateResponse;
 import cloud.chlora.management.user.dto.response.UserDeletedResponse;
 import cloud.chlora.management.user.dto.response.UserGetResponse;
 import cloud.chlora.management.user.dto.response.UserUpdateResponse;
+import org.springframework.jdbc.core.RowMapper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ResponseMapper {
@@ -118,7 +120,7 @@ public class ResponseMapper {
                 int page,
                 int size,
                 int totalPages,
-                List<ClusterListResponse> clusters
+                List<ClusterSummaryResponse> clusters
         ) {
             return new PagedClusterResponse(countData, page, size, totalPages, clusters);
         }
@@ -146,6 +148,14 @@ public class ResponseMapper {
                     cluster.getClusterName(),
                     cluster.getUpdatedAt()
             );
+        }
+
+        public static ClusterListResponse toListResponse(List<Cluster> clusterList) {
+            List<ClusterListResponse.ClusterInfo> list = clusterList.stream()
+                    .map(cluster -> new ClusterListResponse.ClusterInfo(cluster.getClusterId(), cluster.getClusterName()))
+                    .toList();
+
+            return new ClusterListResponse(list);
         }
     }
 }

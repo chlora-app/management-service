@@ -2,7 +2,7 @@ package cloud.chlora.management.iot.cluster.repository;
 
 import cloud.chlora.management.iot.cluster.domain.Cluster;
 import cloud.chlora.management.iot.cluster.dto.query.ClusterQuery;
-import cloud.chlora.management.iot.cluster.dto.response.ClusterListResponse;
+import cloud.chlora.management.iot.cluster.dto.response.ClusterSummaryResponse;
 import cloud.chlora.management.common.enums.IotErrorCode;
 import cloud.chlora.management.common.exception.AppException;
 import cloud.chlora.management.iot.device.domain.Device;
@@ -20,7 +20,7 @@ public class ClusterRepository {
 
     private final JdbcClient jdbcClient;
 
-    public List<ClusterListResponse> findWithDeviceCount(ClusterQuery clusterQuery) {
+    public List<ClusterSummaryResponse> findWithDeviceCount(ClusterQuery clusterQuery) {
         String sql = """
             SELECT c.cluster_id, c.cluster_name, COUNT(d.device_id) AS total_devices
             FROM clusters c
@@ -57,7 +57,7 @@ public class ClusterRepository {
                 .param("order", normalizeOrder(clusterQuery.getOrder()))
                 .param("limit", clusterQuery.getSize())
                 .param("offset", offset)
-                .query((rs, rowNum) -> new ClusterListResponse(
+                .query((rs, rowNum) -> new ClusterSummaryResponse(
                         rs.getString("cluster_id"),
                         rs.getString("cluster_name"),
                         rs.getLong("total_devices")
@@ -180,6 +180,13 @@ public class ClusterRepository {
         jdbcClient.sql(sql)
                 .param(clusterId)
                 .update();
+    }
+
+    public List<Cluster> findAllExistingClusters() {
+        String sql = "SELECT * FROM clusters WHERE deleted_at IS NULL";
+        return jdbcClient.sql(sql)
+                .query(Cluster.class)
+                .list();
     }
 
     public boolean isClusterIdExists(String clusterId) {

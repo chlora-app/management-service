@@ -3,10 +3,7 @@ package cloud.chlora.management.iot.cluster.controller;
 import cloud.chlora.management.iot.cluster.dto.query.ClusterQuery;
 import cloud.chlora.management.iot.cluster.dto.request.ClusterCreateRequest;
 import cloud.chlora.management.iot.cluster.dto.request.ClusterUpdateRequest;
-import cloud.chlora.management.iot.cluster.dto.response.ClusterCreateResponse;
-import cloud.chlora.management.iot.cluster.dto.response.ClusterGetResponse;
-import cloud.chlora.management.iot.cluster.dto.response.ClusterUpdateResponse;
-import cloud.chlora.management.iot.cluster.dto.response.PagedClusterResponse;
+import cloud.chlora.management.iot.cluster.dto.response.*;
 import cloud.chlora.management.iot.cluster.service.ClusterService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +54,11 @@ public class ClusterController {
     public ResponseEntity<@NonNull Void> deleteCluster(@PathVariable String clusterId) {
         clusterService.deleteCluster(clusterId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<@NonNull ClusterListResponse> getClusterList() {
+        ClusterListResponse response = clusterService.getClusterList();
+        return ResponseEntity.ok().body(response);
     }
 }

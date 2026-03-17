@@ -36,7 +36,7 @@ public class ClusterService {
             throw AppException.of(IotErrorCode.SIZE_LOWER_THAN_ONE);
         }
 
-        List<ClusterListResponse> clusterList = clusterRepository.findWithDeviceCount(query);
+        List<ClusterSummaryResponse> clusterList = clusterRepository.findWithDeviceCount(query);
         long totalData = clusterRepository.countExistingClusters(query);
         int totalPages = (int) Math.ceil((double) totalData / query.getSize());
 
@@ -156,5 +156,10 @@ public class ClusterService {
         clusterRepository.softDelete(clusterId);
         clusterRepository.softDeleteDevicesByClusterId(clusterId);
         LogHelper.Cluster.success(log, "Cluster deleted successfully", "deleteCluster", clusterId);
+    }
+
+    public ClusterListResponse getClusterList() {
+        List<Cluster> clusterList = clusterRepository.findAllExistingClusters();
+        return ResponseMapper.ClusterMapper.toListResponse(clusterList);
     }
 }
