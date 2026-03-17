@@ -152,7 +152,7 @@ public class ResponseMapper {
 
         public static ClusterListResponse toListResponse(List<Cluster> clusterList) {
             List<ClusterListResponse.ClusterInfo> list = clusterList.stream()
-                    .map(cluster -> new ClusterListResponse.ClusterInfo(cluster.getClusterId(), cluster.getClusterName()))
+                    .map(cluster -> new ClusterListResponse.ClusterInfo(cluster.getClusterName(), cluster.getClusterId()))
                     .toList();
 
             return new ClusterListResponse(list);

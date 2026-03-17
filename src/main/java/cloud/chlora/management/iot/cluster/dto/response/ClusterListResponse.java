@@ -9,9 +9,9 @@ public record ClusterListResponse(
 ) {
     public record ClusterInfo(
             @JsonProperty("label")
-            String clusterId,
+            String clusterName,
 
             @JsonProperty("value")
-            String clusterName
+            String clusterId
     ) {}
 }
